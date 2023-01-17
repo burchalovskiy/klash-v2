@@ -10,6 +10,7 @@ __pycache__/
 # Distribution / packaging
 
 .Python
+build/
 develop-eggs/
 dist/
 downloads/
@@ -36,7 +37,6 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
-test-reports/
 .tox/
 .coverage
 .coverage.*
@@ -212,9 +212,6 @@ bh_unicode_properties.cache
 GitHub.sublime-settings
 
 
-### Emacs template
-.\#*
-
 ### Vim template
 # Swap
 [._]*.s[a-v][a-z]
@@ -239,7 +236,6 @@ src/private-media
 
 .pytest_cache/
 .env
-src/settings/.env
 .envs/*
 !.envs/.local/
 
@@ -248,17 +244,10 @@ backups/
 *.sql.gz
 **/*.sqlite3
 
-
 src/settings/local.py
-
+etc/
 
 ### Jupyter Notebook
 
 **/.ipynb_checkpoints
 jupyter/
-
-### Rest Idea Envs
-*.env.json
-
-etc/
-docker-compose.local.*

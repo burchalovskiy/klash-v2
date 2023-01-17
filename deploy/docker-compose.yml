@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  core:
+    hostname: klash
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: burchalovskiy/klash-v2-app:${IC_IMAGE_TAG}
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file: .prod.env
+    entrypoint: 'uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
+    depends_on:
+      - redis
+
+  web:
+    image: nginx:1.15.2
+    restart: always
+    hostname: web
+    ports:
+      - "8071:80"
+    volumes:
+      - ./etc/docker/nginx/sites-enabled:/etc/nginx/conf.d
+    depends_on:
+      - core

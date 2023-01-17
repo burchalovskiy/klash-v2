@@ -1,0 +1,17 @@
+class ClientFault(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
+class ConnectionFault(Exception):
+    def __init__(self, message, code=None):
+        super().__init__(code, message)
+        self.message = message
+        self.code = code
+
+
+class BuisnessLogicFault(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
