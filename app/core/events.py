@@ -15,13 +15,13 @@ from app.database.settings import init_db
 
 
 def create_start_app_handler(
-    app: FastAPI,
-    settings: AppSettings,
+        app: FastAPI,
+        settings: AppSettings,
 ) -> Callable:
     async def start_app() -> None:
         await init_db(app)
         await connect_redis(app, settings)
-        await admin_app.configure(providers=[UsernamePasswordProvider(admin_model=Admin)], redis=app.state.redis)
+        await init_admin(app)
         await start_scheduler(app)
 
     return start_app
@@ -68,3 +68,11 @@ async def start_scheduler(app: FastAPI) -> None:
 async def stop_scheduler(app: FastAPI) -> None:
     logger.info('Stop Scheduler')
     app.state.scheduler.shutdown()
+
+
+async def init_admin(app: FastAPI) -> None:
+    await admin_app.configure(
+        providers=[UsernamePasswordProvider(admin_model=Admin)],
+        redis=app.state.redis,
+        # admin_path='/control',
+    )

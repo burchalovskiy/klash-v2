@@ -2,7 +2,13 @@ from tortoise import Tortoise
 
 from app.constants import DATABASE_URL
 
-TORTOISE_MODELS_LIST = ['app.database.models', 'aerich.models']
+TORTOISE_MODELS_LIST = [
+    'app.database.models',
+    'aerich.models',
+    'app.services.instagram.models',
+    'app.services.telegram.models',
+    'app.services.vk.models',
+]
 TORTOISE_ORM = {
     'connections': {'default': DATABASE_URL},
     'apps': {
