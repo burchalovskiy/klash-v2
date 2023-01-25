@@ -5,15 +5,16 @@ from app.constants import DATABASE_URL
 TORTOISE_MODELS_LIST = [
     'app.database.models',
     'aerich.models',
-    'app.services.instagram.models',
-    'app.services.telegram.models',
-    'app.services.vk.models',
+    # 'app.services.instagram.models',
+    # 'app.services.telegram.models',
+    # 'app.services.vk.models',
 ]
+
 TORTOISE_ORM = {
     'connections': {'default': DATABASE_URL},
     'apps': {
         'models': {
-            'models': ['app.database.models', 'aerich.models'],
+            'models': TORTOISE_MODELS_LIST,
             'default_connection': 'default',
         },
     },

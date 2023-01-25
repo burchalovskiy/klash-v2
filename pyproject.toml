@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "klash"
 version = "2.0"
-description = "SMM usecase to social networks"
+description = "SMM use case to social networks"
 authors = ["burchalovskiy@gmail.com"]
 
 [tool.poetry.dependencies]
@@ -26,6 +26,7 @@ vk-api = "^11.9.9"
 redis = "^4.4.2"
 asyncio = "^3.4.3"
 tortoise-orm = "^0.19.2"
+cryptocode = "^0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

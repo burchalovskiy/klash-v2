@@ -25,6 +25,7 @@ class AppSettings(BaseAppSettings):
     secret_key: SecretStr
     vcs_ref: str
     release: str
+    token: str
 
     @property
     def fastapi_kwargs(self) -> Dict[str, Any]:

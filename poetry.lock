@@ -252,6 +252,17 @@ tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.1
 toml = ["tomli"]
 
 [[package]]
+name = "cryptocode"
+version = "0.1"
+description = "Python library used to encrypt and decrypt strings in the simplest possible way."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pycryptodomex = "*"
+
+[[package]]
 name = "dictdiffer"
 version = "0.9.0"
 description = "Dictdiffer is a library that helps you to diff and patch dictionaries."
@@ -1249,7 +1260,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "facf07b61b929cfd151637a757c771203a482f961b68e82e82c8e08545c2cd03"
+content-hash = "e347557d4ec14615c75ae34ccacfa89bcdd03fd9450d450a2f3ffd526008f4b7"
 
 [metadata.files]
 aerich = [
@@ -1613,6 +1624,10 @@ coverage = [
     {file = "coverage-7.0.5-cp39-cp39-win_amd64.whl", hash = "sha256:949844af60ee96a376aac1ded2a27e134b8c8d35cc006a52903fc06c24a3296f"},
     {file = "coverage-7.0.5-pp37.pp38.pp39-none-any.whl", hash = "sha256:b9727ac4f5cf2cbf87880a63870b5b9730a8ae3a4a360241a0fdaa2f71240ff0"},
     {file = "coverage-7.0.5.tar.gz", hash = "sha256:051afcbd6d2ac39298d62d340f94dbb6a1f31de06dfaf6fcef7b759dd3860c45"},
+]
+cryptocode = [
+    {file = "cryptocode-0.1-py3-none-any.whl", hash = "sha256:510e8abf8d656e47b03227a5c3845374e23ff64d9947f2bb89d7230ea3bf773a"},
+    {file = "cryptocode-0.1.tar.gz", hash = "sha256:1cf6718e542981ceafc1000b00d60458f8620a1e5adfceb3fc297205b38774cc"},
 ]
 dictdiffer = [
     {file = "dictdiffer-0.9.0-py2.py3-none-any.whl", hash = "sha256:442bfc693cfcadaf46674575d2eba1c53b42f5e404218ca2c2ff549f2df56595"},

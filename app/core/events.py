@@ -74,5 +74,4 @@ async def init_admin(app: FastAPI) -> None:
     await admin_app.configure(
         providers=[UsernamePasswordProvider(admin_model=Admin)],
         redis=app.state.redis,
-        # admin_path='/control',
     )
