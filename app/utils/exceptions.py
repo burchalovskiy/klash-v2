@@ -11,7 +11,7 @@ class ConnectionFault(Exception):
         self.code = code
 
 
-class BuisnessLogicFault(Exception):
+class BusinessLogicFault(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.message = message

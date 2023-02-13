@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 
-import cryptocode
 from fastapi_admin.models import AbstractAdmin
 from tortoise import fields, models
 
@@ -32,12 +31,18 @@ class SocialPost(models.Model):
     post_url = fields.CharField(max_length=800, default='', description='URL address of post')
     source_url = fields.CharField(max_length=800, default='', description='URL address of source')
 
+    def __str__(self):
+        return f'{self.id}#{self.content_type.value}#'
+
 
 class CrossPost(models.Model):
     id = fields.UUIDField(pk=True, editable=False, default=uuid.uuid4)
     post = fields.ForeignKeyField('models.SocialPost', 'post')
     is_send = fields.BooleanField(default=False, description='Post is send to new social network')
     send_date = fields.DatetimeField(description='Send time')
+
+    def __str__(self):
+        return f'{self.id}#{self.post}#'
 
 
 class Channel(BaseModel):
@@ -59,19 +64,24 @@ class Account(models.Model):
     hashed_password = fields.CharField(max_length=256, default='', null=True)
     token = fields.CharField(max_length=256, default='', null=True)
     user = fields.ForeignKeyField('models.Admin', 'account')
+    is_enabled = fields.BooleanField(default=True, description='Is enabled?')
 
-    async def save(self, *args, **kwargs) -> None:
-        self.hashed_password = cryptocode.encrypt(self.hashed_password, settings.token)
-        await super().save(*args, **kwargs)
+    def __str__(self):
+        return f'{self.login}#{self.type.value}'
+    # async def save(self, *args, **kwargs) -> None:
+    #     self.hashed_password = self.get_password_hash(self.hashed_password)
+    #     await super().save(*args, **kwargs)
 
-    def password(self) -> str:
-        return cryptocode.decrypt(self.hashed_password, settings.token)
+    @staticmethod
+    def verify_password(plain_password, hashed_password):
+        return settings.pwd_context.verify(plain_password, hashed_password)
+
+    @staticmethod
+    def get_password_hash(password):
+        return settings.pwd_context.hash(password)
 
     class PydanticMeta:
         exclude = ['hashed_password']
-
-    def __str__(self):
-        return f'{self.title}#{self.type}'
 
 
 class Admin(AbstractAdmin):

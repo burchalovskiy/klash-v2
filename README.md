@@ -5,6 +5,11 @@ fast api sqlalchemy alembic
 
 
 
+### Общее 
+Хранение паролей
+JWT токен
+убрать инит в админке
+
 
 ## VK
 
@@ -43,3 +48,8 @@ fast api sqlalchemy alembic
 задачи:
 * бот отчёт о работе за день (уведомления)
 * публикация постов и сториз в канал
+
+
+### Команды
+aerich migrate    
+aerich upgrade 

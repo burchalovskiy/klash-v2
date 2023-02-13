@@ -1,25 +1,25 @@
 import logging
-import os
-from time import sleep
 from typing import List
+
 from instagrapi import Client as instagrapiClient
-from apps.instagram.models import InstagramAccount, InstagramPost
+
+from app.database.models import Account
 
 
-def getInstagramPosts(account_id: int):
-    account = InstagramAccount.objects.get(pk=account_id)
-    cl = instagrapiClient()
-    cl.set_proxy(os.getenv('PROXY'))
-
+async def log_in(login: str, password: str) -> instagrapiClient:
     try:
-        cl.login(str(os.getenv('INSTAGRAM_USERNAME')), str(os.getenv('INSTAGRAM_PASSWORD')))
+        cl = instagrapiClient()
+        # cl.set_proxy(os.getenv('PROXY'))
+        cl.login(login, password)
     except Exception as e:
         logging.error(e)
+    else:
+        return cl
 
-    sleep(3)
 
-    instagram_user = cl.user_info_by_username(account.username)
-    logging.info(f"Start updated instagram: {account.username}")
+async def get_posts(account: Account) -> None:
+    client = await log_in(account.login, account.hashed_password)
+    user = client.user_info_by_username(account.login)
     account_existed_posts = list(InstagramPost.objects.filter(account=account).values_list('identifier', flat=True))
     new_account_posts: List[InstagramPost] = list()
     available_post = list()
