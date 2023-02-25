@@ -11,3 +11,9 @@ class ContentType(Enum):
     PHOTO = 'Photo'
     VIDEO = 'Video'
     STORIES = 'Stories'
+
+
+class Action(Enum):
+    LIKE = 'LIKE'
+    CROSS_LIKE = 'CROSS_LIKE'
+    COMMENT = 'COMMENT'

@@ -9,7 +9,7 @@ from fastapi_admin.exceptions import (
     unauthorized_error_exception,
 )
 from fastapi_admin.file_upload import FileUpload
-from fastapi_admin.resources import Field, Model
+from fastapi_admin.resources import Field, Model, Dropdown
 from fastapi_admin.widgets import displays, filters, inputs
 from starlette.status import (
     HTTP_401_UNAUTHORIZED,
@@ -18,7 +18,8 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.database.models import Admin, Account, CrossPost, SocialPost
+from app.database.models import Admin, Account, CrossPost, SocialPost, SocialAction, SocialUser, \
+    SocialPostURL
 
 admin_app.add_exception_handler(HTTP_500_INTERNAL_SERVER_ERROR, server_error_exception)
 admin_app.add_exception_handler(HTTP_404_NOT_FOUND, not_found_error_exception)
@@ -83,51 +84,118 @@ class AccountResource(Model):
 
 
 @admin_app.register
-class CrossPostResource(Model):
-    label = 'Sent posts'
-    icon = 'fa fa-at'
-    model = CrossPost
-    filters = [
-        filters.Datetime(name='send_date', label='Date', placeholder='Search by date')
-    ]
-    fields = [
-        'id',
-        Field(
-            name='post',
-            label='Post to',
-            display=displays.Display(),
-            input_=inputs.ForeignKey(SocialPost),
-        ),
-        Field(name='is_send', label='Is sent?', display=displays.Boolean(), input_=inputs.Switch()),
-        Field(name='send_date', label='Time', display=displays.DatetimeDisplay(), input_=inputs.DateTime())
+class Social(Dropdown):
+    class CrossPostResource(Model):
+        label = 'Cross posts'
+        icon = 'fa fa-at'
+        model = CrossPost
+        filters = [
+            filters.Datetime(name='send_date', label='Date', placeholder='Search by date')
+        ]
+        fields = [
+            'id',
+            Field(
+                name='post',
+                label='Post to',
+                display=displays.Display(),
+                input_=inputs.ForeignKey(SocialPost),
+            ),
+            Field(name='is_send', label='Is sent?', display=displays.Boolean(), input_=inputs.Switch()),
+            Field(name='send_date', label='Time', display=displays.DatetimeDisplay(), input_=inputs.DateTime())
+        ]
+
+    class SocialPostResource(Model):
+        label = 'Scrab posts'
+        icon = 'fa fa-at'
+        model = SocialPost
+        filters = [
+            filters.Datetime(name='send_date', label='Date', placeholder='Search by date')
+        ]
+        fields = [
+            'id',
+            Field(
+                name='account',
+                label='Account',
+                display=displays.Display(),
+                input_=inputs.ForeignKey(Account),
+            ),
+            'post_id',
+            'caption',
+            'post_url',
+            Field(
+                name='created_at',
+                label='created_at',
+                display=displays.DateDisplay(),
+                input_=inputs.DateTime(),
+            ),
+        ]
+
+    class SocialUserResource(Model):
+        label = 'Users'
+        icon = 'fa fa-at'
+        model = SocialUser
+        filters = [
+            filters.Search(name='username', label='Username', search_mode='contains',
+                           placeholder='Search for username'),
+        ]
+        fields = [
+            'id',
+            Field(
+                name='account',
+                label='By account',
+                display=displays.Display(),
+                input_=inputs.ForeignKey(Account),
+            ),
+            'username',
+
+            Field(
+                name='actions',
+                label='Actions',
+                display=displays.Display(),
+                input_=inputs.ManyToMany(SocialAction),
+            ),
+        ]
+
+    class SocialPostURLResource(Model):
+        label = 'URLs'
+        icon = 'fa fa-at'
+        model = SocialPostURL
+        fields = [
+            'id',
+            'content_type',
+            'url',
+            Field(
+                name='post',
+                label='Post',
+                display=displays.Display(),
+                input_=inputs.ForeignKey(SocialPost),
+            ),
+        ]
+
+    label = "Socials"
+    icon = "fas fa-bars"
+    resources = [
+        CrossPostResource,
+        SocialPostResource,
+        SocialUserResource,
+        SocialPostURLResource,
     ]
 
 
 @admin_app.register
-class SocialPostResource(Model):
-    label = 'Scrab posts'
+class SocialActionResource(Model):
+    label = 'Actions'
     icon = 'fa fa-at'
-    model = SocialPost
-    filters = [
-        filters.Datetime(name='send_date', label='Date', placeholder='Search by date')
-    ]
+    model = SocialAction
     fields = [
         'id',
+        'title',
         Field(
-            name='account',
-            label='Account',
-            display=displays.Display(),
-            input_=inputs.ForeignKey(Account),
+            name='is_active',
+            label='Enabled',
+            display=displays.Boolean(),
+            input_=inputs.Switch(),
         ),
-        'post_id',
-        'caption',
-        'content_type',
-        'post_url',
-        'source_url',
-        Field(
-            name='created_at',
-            label='created_at',
-            display=displays.DateDisplay(),
-            input_=inputs.DateTime(),
-        ),
+        'type',
+        'values',
     ]

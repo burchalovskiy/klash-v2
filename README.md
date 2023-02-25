@@ -25,12 +25,12 @@ JWT токен
 
 
 ## Instagram
+https://github.com/adw0rd/instagrapi
+
 
 что нужно:
-* номер телефона
-* пароль
-* хэш тэги
-* список аккаунтов для поиска
+* обработка исключений
+* instagrapi.exceptions.ChallengeUnknownStep
 
 задачи:
 * поиск+сохранение публикации
