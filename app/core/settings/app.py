@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from typing import Any, Dict, List, Tuple
 
@@ -23,6 +24,7 @@ class AppSettings(BaseAppSettings):
     allowed_hosts: List[str] = ['*']
     logging_level: int = logging.INFO
     loggers: Tuple[str, str] = ('uvicorn.asgi', 'uvicorn.access')
+    media_path = os.getcwd() + '/media'
 
     # env
     redis_url: str

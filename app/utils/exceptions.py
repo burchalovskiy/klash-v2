@@ -20,3 +20,4 @@ class BusinessLogicFault(Exception):
 class ExceptionMessages:
     AUTH = 'Ошибка авторизации: {exc}'
     NOT_FOUND = 'Отсутствуют запрашиваемые данные'
+    LIMIT = 'Превышены лимиты'

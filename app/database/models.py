@@ -69,7 +69,7 @@ class SocialAction(BaseModel):
 
 class SocialActionLog(models.Model):
     id = fields.BigIntField(pk=True)
-    send_at = fields.DatetimeField(description='Created time', default=datetime.now())
+    send_at = fields.DatetimeField(description='Created time', auto_now_add=True)
     user = fields.ForeignKeyField('models.SocialUser')
     action = fields.ForeignKeyField('models.SocialAction')
     post_url = fields.CharField(max_length=800, default='', description='URL address of post')

@@ -1,22 +1,43 @@
-import logging
+import os
 import time
+from datetime import datetime
 from pathlib import Path
-
-import asyncio
 from random import randrange
 
 import tortoise.exceptions
 from instagrapi import Client as instagrapiClient
-from tortoise.query_utils import Prefetch
+from instagrapi.exceptions import ClientForbiddenError
 
+from app.core.config import get_app_settings
 from app.database.models import Account, SocialPost, SocialPostURL, SocialUser, SocialAction, SocialActionLog
 from app.services.constants import ContentType, Action
-from app.utils.exceptions import ClientFault, ExceptionMessages
+from app.utils.exceptions import BusinessLogicFault, ExceptionMessages
+
+settings = get_app_settings()
+
+
+class Limits:
+    moment_likes: int = 50
+    day_likes: int = 500
+    moment_comments: int = 40
+    day_comments: int = 200
 
 
 async def log_in(login: str, password: str) -> instagrapiClient:
+    dump_file = Path(f'{settings.media_path}/auth/{login}.json')
+
     cl = instagrapiClient()
-    cl.login(login, password)
+    try:
+        if dump_file.is_file():
+            cl.load_settings(dump_file)
+            cl.login(login, password)
+            cl.get_timeline_feed()
+        else:
+            cl.login(login, password)
+            open(dump_file, 'a').close()
+            cl.dump_settings(dump_file)
+    except ClientForbiddenError:
+        os.remove(dump_file)
 
     return cl
 
@@ -89,13 +110,8 @@ async def get_stories(account: Account) -> None:
 
 
 async def set_comment() -> None:
-    actions = await SocialAction.filter(
-        is_active=True, type=Action.COMMENT.name
-    ).prefetch_related(
-        Prefetch("users", queryset=SocialUser.all().prefetch_related(
-            Prefetch("account", queryset=Account.all())
-        )),
-    )
+    comment_count = 0
+    actions = await SocialAction.filter(is_active=True, type=Action.COMMENT.name).prefetch_related()
 
     if not actions:
         raise tortoise.exceptions.DoesNotExist()
@@ -106,6 +122,7 @@ async def set_comment() -> None:
             raise tortoise.exceptions.DoesNotExist()
 
         for user in users:
+            await _check_limits(action, user)
             account = await user.account
             client = await log_in(account.login, account.hashed_password)
             instagram_user = client.user_info_by_username(user.username)
@@ -127,11 +144,68 @@ async def set_comment() -> None:
                 if not created:
                     continue
 
-                if action.values.get('send_like'):
-                    client.media_like(post.id)
-
                 for comment in comments:
+                    if comment_count > Limits.moment_comments:
+                        raise BusinessLogicFault(ExceptionMessages.LIMIT.value)
                     client.media_comment(post.id, comment)
                     time.sleep(randrange(3))
 
             client.logout()
+
+
+async def set_cross_like() -> None:
+    like_count = 0
+    actions = await SocialAction.filter(is_active=True, type=Action.CROSS_LIKE.name).prefetch_related()
+    if not actions:
+        raise tortoise.exceptions.DoesNotExist()
+
+    for action in actions:
+        users = await action.users
+        if not users:
+            raise tortoise.exceptions.DoesNotExist()
+
+        for user in users:
+            await _check_limits(action, user)
+
+            account = await user.account
+            client = await log_in(account.login, account.hashed_password)
+            instagram_user = client.user_info_by_username(user.username)
+            posts = client.user_medias(int(instagram_user.pk), 5)
+
+            for post in posts:
+                users_who_sent_likes = client.media_likers(post.pk)
+                for user_like in users_who_sent_likes:
+                    user_like_posts = client.user_medias(int(user_like.pk), 3)
+                    for user_like_post in user_like_posts:
+                        _, created = await SocialActionLog.get_or_create(
+                            post_url=f'https://www.instagram.com/p/{user_like_post.code}/',
+                            defaults={
+                                'user': user,
+                                'action': action,
+                            }
+                        )
+                        if not created:
+                            continue
+
+                        if not post.has_liked:
+                            if like_count > Limits.moment_likes:
+                                raise BusinessLogicFault(ExceptionMessages.LIMIT.value)
+
+                            client.media_like(post.id)
+                            like_count += 1
+                            time.sleep(30)
+
+            client.logout()
+
+
+async def _check_limits(action: SocialAction, user: SocialUser) -> None:
+    today = datetime.now()
+    day_limit = await SocialActionLog.filter(
+        action=action,
+        user=user,
+        send_at__year=today.year,
+        send_at__month=today.month,
+        send_at__day=today.day,
+    ).count()
+    if day_limit > Limits.day_comments:
+        raise BusinessLogicFault(ExceptionMessages.LIMIT.value)

@@ -3,7 +3,7 @@ from loguru import logger
 
 from app.database.models import Account
 from app.services.constants import SocialNetwork
-from app.services.instagram.base import get_posts, get_stories, set_comment
+from app.services.instagram.base import get_posts, get_stories, set_comment, set_cross_like
 from app.utils.exceptions import BusinessLogicFault
 
 
@@ -16,7 +16,8 @@ async def task_save_instagram_post() -> None:
     for account in accounts:
         # tasks.append(asyncio.create_task(get_posts(account)))
         # tasks.append(asyncio.create_task(get_stories(account)))
-        tasks.append(asyncio.create_task(set_comment()))
+        # tasks.append(asyncio.create_task(set_comment()))
+        tasks.append(asyncio.create_task(set_cross_like()))
     await asyncio.gather(*tasks)
 
 

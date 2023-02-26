@@ -19,7 +19,7 @@ rsa = "*"
 aiohttp = "*"
 asyncpg = "*"
 aerich = "*"
-fastapi-admin = { git = 'https://github.com/fastapi-admin/fastapi-admin.git' }
+fastapi-admin = { git = 'https://github.com/burchalovskiy/fastapi-admin.git' }
 instagrapi = "^1.16.30"
 telebot = "^0.0.4"
 vk-api = "^11.9.9"
