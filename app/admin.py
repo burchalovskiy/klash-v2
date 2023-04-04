@@ -19,7 +19,7 @@ from starlette.status import (
 )
 
 from app.database.models import Admin, Account, CrossPost, SocialPost, SocialAction, SocialUser, \
-    SocialPostURL
+    SocialPostURL, SocialActionLog
 
 admin_app.add_exception_handler(HTTP_500_INTERNAL_SERVER_ERROR, server_error_exception)
 admin_app.add_exception_handler(HTTP_404_NOT_FOUND, not_found_error_exception)
@@ -71,7 +71,7 @@ class AccountResource(Model):
             name='hashed_password',
             label='Password',
             display=displays.Display(),
-            input_=inputs.Input(),
+            input_=inputs.Password(),
         ),
         'token',
         Field(
@@ -183,19 +183,32 @@ class Social(Dropdown):
 
 
 @admin_app.register
-class SocialActionResource(Model):
-    label = 'Actions'
-    icon = 'fa fa-at'
-    model = SocialAction
-    fields = [
-        'id',
-        'title',
-        Field(
-            name='is_active',
-            label='Enabled',
-            display=displays.Boolean(),
-            input_=inputs.Switch(),
-        ),
-        'type',
-        'values',
+class SocialAction(Dropdown):
+    class SocialActionResource(Model):
+        label = 'Actions'
+        icon = 'fa fa-at'
+        model = SocialAction
+        fields = [
+            'id',
+            'title',
+            Field(
+                name='is_active',
+                label='Enabled',
+                display=displays.Boolean(),
+                input_=inputs.Switch(),
+            ),
+            'type',
+            'values',
+        ]
+
+    class SocialActionLogResource(Model):
+        label = 'Logs'
+        icon = 'fa fa-at'
+        model = SocialActionLog
+
+    label = "Actions"
+    icon = "fas fa-bars"
+    resources = [
+        SocialActionResource,
+        SocialActionLogResource,
     ]

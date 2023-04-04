@@ -14,7 +14,6 @@ from app.core.settings.base import BaseAppSettings
 
 class AppSettings(BaseAppSettings):
     debug: bool = False
-    docs_url: str = '/docs'
     title: str = 'Klash'
     version: str = '2.0.0'
     api_prefix: str = "/api"
@@ -29,6 +28,7 @@ class AppSettings(BaseAppSettings):
     # env
     redis_url: str
     secret_key: SecretStr
+    fernet_key: str
     vcs_ref: str
     release: str
     token: str
@@ -37,7 +37,6 @@ class AppSettings(BaseAppSettings):
     def fastapi_kwargs(self) -> Dict[str, Any]:
         return {
             'debug': self.debug,
-            'docs_url': self.docs_url,
             'title': self.title,
             'version': self.version,
         }

@@ -43,7 +43,7 @@ async def log_in(login: str, password: str) -> instagrapiClient:
 
 
 async def get_posts(account: Account) -> None:
-    client = await log_in(account.login, account.hashed_password)
+    client = await log_in(account.login, account.password)
     user = client.user_info_by_username(account.login)
     posts = client.user_medias(int(user.pk), 5)
 
@@ -80,11 +80,9 @@ async def get_posts(account: Account) -> None:
                 }
             )
 
-    client.logout()
-
 
 async def get_stories(account: Account) -> None:
-    client = await log_in(account.login, account.hashed_password)
+    client = await log_in(account.login, account.password)
     user = client.user_info_by_username(account.login)
     stories = client.user_stories(int(user.pk))
 
@@ -106,8 +104,6 @@ async def get_stories(account: Account) -> None:
             }
         )
 
-    client.logout()
-
 
 async def set_comment() -> None:
     comment_count = 0
@@ -124,7 +120,7 @@ async def set_comment() -> None:
         for user in users:
             await _check_limits(action, user)
             account = await user.account
-            client = await log_in(account.login, account.hashed_password)
+            client = await log_in(account.login, account.password)
             instagram_user = client.user_info_by_username(user.username)
             posts = client.user_medias(int(instagram_user.pk), 5)
 
@@ -135,7 +131,7 @@ async def set_comment() -> None:
                     continue
 
                 _, created = await SocialActionLog.get_or_create(
-                    post_url=f'https://www.instagram.com/p/{post.code}/',
+                    message=f'https://www.instagram.com/p/{post.code}/',
                     defaults={
                         'user': user,
                         'action': action,
@@ -149,8 +145,6 @@ async def set_comment() -> None:
                         raise BusinessLogicFault(ExceptionMessages.LIMIT.value)
                     client.media_comment(post.id, comment)
                     time.sleep(randrange(3))
-
-            client.logout()
 
 
 async def set_cross_like() -> None:
@@ -168,7 +162,7 @@ async def set_cross_like() -> None:
             await _check_limits(action, user)
 
             account = await user.account
-            client = await log_in(account.login, account.hashed_password)
+            client = await log_in(account.login, account.password)
             instagram_user = client.user_info_by_username(user.username)
             posts = client.user_medias(int(instagram_user.pk), 5)
 
@@ -178,7 +172,7 @@ async def set_cross_like() -> None:
                     user_like_posts = client.user_medias(int(user_like.pk), 3)
                     for user_like_post in user_like_posts:
                         _, created = await SocialActionLog.get_or_create(
-                            post_url=f'https://www.instagram.com/p/{user_like_post.code}/',
+                            message=f'https://www.instagram.com/p/{user_like_post.code}/',
                             defaults={
                                 'user': user,
                                 'action': action,
@@ -194,8 +188,6 @@ async def set_cross_like() -> None:
                             client.media_like(post.id)
                             like_count += 1
                             time.sleep(30)
-
-            client.logout()
 
 
 async def _check_limits(action: SocialAction, user: SocialUser) -> None:

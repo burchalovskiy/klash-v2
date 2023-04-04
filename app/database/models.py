@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from cryptography.fernet import Fernet
 from fastapi_admin.models import AbstractAdmin
 from tortoise import fields, models
 
@@ -72,7 +73,7 @@ class SocialActionLog(models.Model):
     send_at = fields.DatetimeField(description='Created time', auto_now_add=True)
     user = fields.ForeignKeyField('models.SocialUser')
     action = fields.ForeignKeyField('models.SocialAction')
-    post_url = fields.CharField(max_length=800, default='', description='URL address of post')
+    message = fields.CharField(max_length=800, default='')
 
 
 class CrossPost(models.Model):
@@ -107,17 +108,19 @@ class Account(BaseModel):
     def __str__(self):
         return f'{self.login}#{self.type.value}'
 
-    # async def save(self, *args, **kwargs) -> None:
-    #     self.hashed_password = self.get_password_hash(self.hashed_password)
-    #     await super().save(*args, **kwargs)
+    async def save(self, *args, **kwargs) -> None:
+        self.hashed_password = self.set_password(self.hashed_password)
+        await super().save(*args, **kwargs)
 
     @staticmethod
-    def verify_password(plain_password, hashed_password):
-        return settings.pwd_context.verify(plain_password, hashed_password)
+    async def set_password(password: str) -> str:
+        fernet = Fernet(settings.fernet_key.encode())
+        return fernet.encrypt(password.encode()).decode()
 
-    @staticmethod
-    def get_password_hash(password):
-        return settings.pwd_context.hash(password)
+    @property
+    def password(self) -> str:
+        fernet = Fernet(settings.fernet_key.encode())
+        return fernet.decrypt(self.hashed_password).decode()
 
     class PydanticMeta:
         exclude = ['hashed_password']

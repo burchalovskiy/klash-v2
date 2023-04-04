@@ -17,3 +17,4 @@ class Action(Enum):
     LIKE = 'LIKE'
     CROSS_LIKE = 'CROSS_LIKE'
     COMMENT = 'COMMENT'
+    ADD_USERS = 'ADD_USERS'

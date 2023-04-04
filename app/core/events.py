@@ -3,7 +3,6 @@ from typing import Callable
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
 from fastapi_admin.providers.login import UsernamePasswordProvider
 from loguru import logger
@@ -13,6 +12,7 @@ from app.admin import admin_app
 from app.core.settings.app import AppSettings
 from app.database.models import Admin
 from app.database.settings import init_db
+from app.services.instagram.tasks import set_instagram_events
 
 
 def create_start_app_handler(
@@ -63,10 +63,7 @@ async def start_scheduler(app: FastAPI) -> None:
         },
         job_defaults={'coalesce': True, 'max_instance': 1},
     )
-    # app.state.scheduler.add_job(
-    #     # update_company_errors,
-    #     # CronTrigger.from_crontab("* * * * *"),
-    # )
+    set_instagram_events(app)
 
     app.state.scheduler.start()
 
