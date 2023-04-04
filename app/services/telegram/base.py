@@ -6,11 +6,9 @@ from time import sleep
 from typing import List
 
 import telebot
-
-from telebot import types
-
 from apps.instagram.models import InstagramPost
 from apps.telegram.models import TelegramChannel, TelegramPost
+from telebot import types
 
 
 def sendTelegramPosts(posts: List[InstagramPost]):
@@ -35,10 +33,15 @@ def sendTelegramPosts(posts: List[InstagramPost]):
             media[0].caption = f'{caption}\n\nСсылка:\n{post_url}'
 
             telegram_message = bot.send_media_group(chat_id=channel.name, media=media)
-            telegramPosts.append(TelegramPost(
-                telegram_post_id=telegram_message[0].message_id,
-                telegram_channel=channel,
-                telegram_posted_at=datetime.datetime.fromtimestamp(telegram_message[0].date, tz=datetime.timezone.utc)))
+            telegramPosts.append(
+                TelegramPost(
+                    telegram_post_id=telegram_message[0].message_id,
+                    telegram_channel=channel,
+                    telegram_posted_at=datetime.datetime.fromtimestamp(
+                        telegram_message[0].date, tz=datetime.timezone.utc
+                    ),
+                )
+            )
 
             # sleep few second Telegram bot api: Error code 429 Too many requests
             sleep(len(media))

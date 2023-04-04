@@ -9,8 +9,8 @@ from instagrapi import Client as instagrapiClient
 from instagrapi.exceptions import ClientForbiddenError
 
 from app.core.config import get_app_settings
-from app.database.models import Account, SocialPost, SocialPostURL, SocialUser, SocialAction, SocialActionLog
-from app.services.constants import ContentType, Action
+from app.database.models import Account, SocialAction, SocialActionLog, SocialPost, SocialPostURL, SocialUser
+from app.services.constants import Action, ContentType
 from app.utils.exceptions import BusinessLogicFault, ExceptionMessages
 
 settings = get_app_settings()
@@ -55,7 +55,7 @@ async def get_posts(account: Account) -> None:
                 'account': account,
                 'caption': post.caption_text,
                 'post_url': f'https://www.instagram.com/p/{post.code}/',
-            }
+            },
         )
 
         if post.media_type == 8:
@@ -67,7 +67,7 @@ async def get_posts(account: Account) -> None:
                     defaults={
                         'post': social_post,
                         'content_type': content_type,
-                    }
+                    },
                 )
         else:
             url = post.thumbnail_url if post.video_url is None else post.video_url
@@ -77,7 +77,7 @@ async def get_posts(account: Account) -> None:
                 defaults={
                     'post': social_post,
                     'content_type': content_type,
-                }
+                },
             )
 
 
@@ -93,7 +93,7 @@ async def get_stories(account: Account) -> None:
                 'created_at': story.taken_at.isoformat(),
                 'account': account,
                 'post_url': f'https://www.instagram.com/stories/{account.login}/{story.pk}/',
-            }
+            },
         )
         url = story.thumbnail_url if story.video_url is None else story.video_url
         await SocialPostURL.get_or_create(
@@ -101,7 +101,7 @@ async def get_stories(account: Account) -> None:
             defaults={
                 'post': social_post,
                 'content_type': ContentType.STORIES.value,
-            }
+            },
         )
 
 
@@ -135,7 +135,7 @@ async def set_comment() -> None:
                     defaults={
                         'user': user,
                         'action': action,
-                    }
+                    },
                 )
                 if not created:
                     continue
@@ -176,7 +176,7 @@ async def set_cross_like() -> None:
                             defaults={
                                 'user': user,
                                 'action': action,
-                            }
+                            },
                         )
                         if not created:
                             continue

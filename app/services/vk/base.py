@@ -1,51 +1,90 @@
+import json
 import logging
 
+import tortoise
 import vk_api
+from vk_api.vk_api import VkApiMethod
 
-from apps.core.base import wait
+from app.database.models import Account, SocialAction, SocialActionLog, SocialPost, SocialUser
+from app.services.constants import Action
 
 
-class VKService:
-    def __init__(self, login: str, password: str):
-        session = vk_api.VkApi(login, password)
-        session.auth()
-        self.client = session.get_api()
+async def log_in(login: str, password: str) -> VkApiMethod:
+    session = vk_api.VkApi(login, password)
+    session.auth()
+    return session.get_api()
 
-    def send_to_wall(self):
-        self.client.wall.post(message='Hello world!')
 
-    @wait
-    def get_account_counters(self, account_id: int):
-        return self.client.account.getCounters(user_id=account_id)
+async def _check_limits(action: SocialAction, user: SocialUser) -> None:
+    pass
+    # today = datetime.now()
+    # day_limit = await SocialActionLog.filter(
+    #     action=action,
+    #     user=user,
+    #     send_at__year=today.year,
+    #     send_at__month=today.month,
+    #     send_at__day=today.day,
+    # ).count()
+    # if day_limit > Limits.day_comments:
+    #     raise BusinessLogicFault(ExceptionMessages.LIMIT.value)
 
-    @wait
-    def add_friend(self, account_id: int):
-        try:
-            self.client.friends.add(user_id=account_id)
-            logging.info(f"Add request to add: [{account_id}]")
-        except Exception as e:
-            message = e.error.get('error_msg')
 
-            if e.code == 177:
-                return
-            logging.error(f"Add failed: {message}")
-            raise Exception(message)
+async def add_friend():
+    friends_ids = []
+    friends_count = 50
+    #  TODO Сохранение списка друзей. Брать срезами по 50
 
-    @wait
-    def get_friends(self, account_id: int = None):
-        if account_id:
-            return self.client.friends.get(user_id=account_id)
-        return self.client.friends.get()
+    actions = await SocialAction.filter(is_active=True, type=Action.ADD_USERS.name).prefetch_related()
 
-    @wait
-    def get_friends_count(self, account_id: int = None) -> int:
-        if account_id:
-            friends = self.client.friends.get(user_id=account_id)
-        else:
-            friends = self.client.friends.get()
+    if not actions:
+        raise tortoise.exceptions.DoesNotExist()
 
-        return friends.get('count', 0)
+    for action in actions:
+        users = await action.users
+        if not users:
+            raise tortoise.exceptions.DoesNotExist()
 
-    @wait
-    def get_account_info(self, account_id: int):
-        return self.client.users.get(user_ids=account_id)
+        for user in users:
+            await _check_limits(action, user)
+            account = await user.account
+            client = await log_in(account.login, account.password)
+            user_friends_count = client.friends.get().get('count', 0)
+
+            for user_id in friends_ids:
+                friend_log = {
+                    'friend_id': user_id,
+                    'friends_count': user_friends_count,
+                }
+
+                try:
+                    client.friends.add(user_id=user_id)
+                except Exception as e:
+                    friend_log.update(
+                        {
+                            'success': False,
+                        }
+                    )
+                    message = e.error.get('error_msg')
+                    if e.code == 177:
+                        return
+
+                    raise Exception(message)
+                else:
+                    friend_log.update(
+                        {
+                            'success': True,
+                        }
+                    )
+                finally:
+                    await SocialActionLog.create(message=json.dumps(friend_log), user=user, action=action)
+
+
+async def set_stories(account: Account) -> None:
+    client = await log_in(account.login, account.password)
+
+    stories = []
+
+    for story in stories:
+        client.stories.getPhotoUploadServer()
+        client.stories.getVideoUploadServer()
+        # TODO https://vk.com/dev/stories.getVideoUploadServer=

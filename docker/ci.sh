@@ -15,6 +15,12 @@ run_ci() {
   set -x # we want to print commands during the CI process.
   # Checking if all the dependencies are secure and do not have any
   # known vulnerabilities:
+  if [ "$1" = 'fix' ]
+  then
+    poetry run task isort
+    black .
+  fi
+
   if [ "$1" = 'lint' ]
   then
     poetry run task lint

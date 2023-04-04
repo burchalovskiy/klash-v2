@@ -9,7 +9,7 @@ from fastapi_admin.exceptions import (
     unauthorized_error_exception,
 )
 from fastapi_admin.file_upload import FileUpload
-from fastapi_admin.resources import Field, Model, Dropdown
+from fastapi_admin.resources import Dropdown, Field, Model
 from fastapi_admin.widgets import displays, filters, inputs
 from starlette.status import (
     HTTP_401_UNAUTHORIZED,
@@ -18,8 +18,16 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.database.models import Admin, Account, CrossPost, SocialPost, SocialAction, SocialUser, \
-    SocialPostURL, SocialActionLog
+from app.database.models import (
+    Account,
+    Admin,
+    CrossPost,
+    SocialAction,
+    SocialActionLog,
+    SocialPost,
+    SocialPostURL,
+    SocialUser,
+)
 
 admin_app.add_exception_handler(HTTP_500_INTERNAL_SERVER_ERROR, server_error_exception)
 admin_app.add_exception_handler(HTTP_404_NOT_FOUND, not_found_error_exception)
@@ -31,6 +39,7 @@ upload = FileUpload(uploads_dir=os.path.join(BASE_DIR, "static", "uploads"))
 
 # icon
 # https://fontawesomeicons.com/
+
 
 @admin_app.register
 class AdminResource(Model):
@@ -79,7 +88,7 @@ class AccountResource(Model):
             label='User',
             display=displays.Display(),
             input_=inputs.ForeignKey(Admin),
-        )
+        ),
     ]
 
 
@@ -89,9 +98,7 @@ class Social(Dropdown):
         label = 'Cross posts'
         icon = 'fa fa-at'
         model = CrossPost
-        filters = [
-            filters.Datetime(name='send_date', label='Date', placeholder='Search by date')
-        ]
+        filters = [filters.Datetime(name='send_date', label='Date', placeholder='Search by date')]
         fields = [
             'id',
             Field(
@@ -101,16 +108,14 @@ class Social(Dropdown):
                 input_=inputs.ForeignKey(SocialPost),
             ),
             Field(name='is_send', label='Is sent?', display=displays.Boolean(), input_=inputs.Switch()),
-            Field(name='send_date', label='Time', display=displays.DatetimeDisplay(), input_=inputs.DateTime())
+            Field(name='send_date', label='Time', display=displays.DatetimeDisplay(), input_=inputs.DateTime()),
         ]
 
     class SocialPostResource(Model):
         label = 'Scrab posts'
         icon = 'fa fa-at'
         model = SocialPost
-        filters = [
-            filters.Datetime(name='send_date', label='Date', placeholder='Search by date')
-        ]
+        filters = [filters.Datetime(name='send_date', label='Date', placeholder='Search by date')]
         fields = [
             'id',
             Field(
@@ -135,8 +140,9 @@ class Social(Dropdown):
         icon = 'fa fa-at'
         model = SocialUser
         filters = [
-            filters.Search(name='username', label='Username', search_mode='contains',
-                           placeholder='Search for username'),
+            filters.Search(
+                name='username', label='Username', search_mode='contains', placeholder='Search for username'
+            ),
         ]
         fields = [
             'id',
@@ -147,7 +153,6 @@ class Social(Dropdown):
                 input_=inputs.ForeignKey(Account),
             ),
             'username',
-
             Field(
                 name='actions',
                 label='Actions',

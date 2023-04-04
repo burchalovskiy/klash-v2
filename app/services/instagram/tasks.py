@@ -58,7 +58,5 @@ async def task_set_instagram_comment() -> None:
 
 
 async def task_set_instagram_cross_like() -> None:
-    tasks = [
-        asyncio.create_task(set_cross_like())
-    ]
+    tasks = [asyncio.create_task(set_cross_like())]
     await asyncio.gather(*tasks)

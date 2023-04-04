@@ -6,7 +6,7 @@ from fastapi_admin.models import AbstractAdmin
 from tortoise import fields, models
 
 from app.core.config import get_app_settings
-from app.services.constants import SocialNetwork, ContentType, Action
+from app.services.constants import Action, ContentType, SocialNetwork
 
 settings = get_app_settings()
 

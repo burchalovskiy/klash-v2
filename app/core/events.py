@@ -1,7 +1,9 @@
 from typing import Callable
 
+from apscheduler.executors.asyncio import AsyncIOExecutor
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.redis import RedisJobStore
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from fastapi_admin.providers.login import UsernamePasswordProvider
@@ -16,8 +18,8 @@ from app.services.instagram.tasks import set_instagram_events
 
 
 def create_start_app_handler(
-        app: FastAPI,
-        settings: AppSettings,
+    app: FastAPI,
+    settings: AppSettings,
 ) -> Callable:
     async def start_app() -> None:
         await init_db(app)
@@ -47,6 +49,10 @@ async def disconnect_redis(app: FastAPI) -> None:
     await app.state.redis.close()
 
 
+def test_job():
+    logger.info('testt')
+
+
 async def start_scheduler(app: FastAPI) -> None:
     logger.info('Start Scheduler')
     redis_config = app.state.redis.connection_pool.connection_kwargs
@@ -55,15 +61,15 @@ async def start_scheduler(app: FastAPI) -> None:
         port=redis_config.get('port', '6379'),
     )
 
-    app.state.scheduler = BackgroundScheduler()
+    app.state.scheduler = AsyncIOScheduler()
     app.state.scheduler.configure(
         jobstores={'default': redis_job_store},
         executors={
-            'default': ThreadPoolExecutor(),
+            'default': AsyncIOExecutor(),
         },
-        job_defaults={'coalesce': True, 'max_instance': 1},
+        job_defaults={'coalesce': True, 'max_instance': 4},
     )
-    set_instagram_events(app)
+    # set_instagram_events(app)
 
     app.state.scheduler.start()
 
